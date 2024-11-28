@@ -65,3 +65,23 @@ CHAT_RESPONSE=$(curl -s -X POST "$API_URL/chat/$SESSION_ID" \
     "message": "Beschreibe mir die Golden Gate Bridge."
   }')
 echo $CHAT_RESPONSE | jq '.'
+
+# Test analysis endpoint
+echo -e "\nCreating analysis for session..."
+ANALYSIS_RESPONSE=$(curl -s -X POST "$API_URL/analysis/$SESSION_ID" \
+  -H "Content-Type: application/json")
+
+echo "Analysis response:"
+echo $ANALYSIS_RESPONSE | jq '.'
+
+# Check if analysis was successful
+if [[ $(echo $ANALYSIS_RESPONSE | jq -r '.id' 2>/dev/null) == "null" ]]; then
+    echo "Error creating analysis:"
+    echo $ANALYSIS_RESPONSE | jq '.'
+    exit 1
+else
+    echo "Analysis created successfully with scores:"
+    echo $ANALYSIS_RESPONSE | jq '.scores'
+    echo -e "\nAnalysis summary:"
+    echo $ANALYSIS_RESPONSE | jq -r '.summary'
+fi

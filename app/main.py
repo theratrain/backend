@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.core.config import settings
 from app.core.logging_config import setup_logging
-from app.api.endpoints import users, chat, sessions, analyses
+from app.api.endpoints import users, chat, sessions, analysis
 from app.db.session import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,4 +26,4 @@ app.add_middleware(
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(sessions.router, prefix="/sessions", tags=["sessions"])
-app.include_router(analyses.router, prefix="/analyses", tags=["analyses"]) 
+app.include_router(analysis.router, prefix="/analysis", tags=["analysis"]) 
