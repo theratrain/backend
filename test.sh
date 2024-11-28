@@ -36,16 +36,15 @@ SESSION_RESPONSE=$(curl -s -X POST "$API_URL/chat/new/$USER_ID" \
     "message": "Hallo, wie geht es dir?"
   }')
 
-# Check if session creation was successful by checking if session_id exists and is not null
-if [[ $(echo $SESSION_RESPONSE | jq 'has("session_id")') == "true" && $(echo $SESSION_RESPONSE | jq -r '.session_id') != "null" ]]; then
-    SESSION_ID=$(echo $SESSION_RESPONSE | jq -r '.session_id')
-    echo "Created session with ID: $SESSION_ID"
-    echo "Response:"
-    echo $SESSION_RESPONSE | jq '.'
-else
+# Check if session creation was successful
+if [[ $(echo $SESSION_RESPONSE | jq -r '.session_id' 2>/dev/null) == "null" ]]; then
     echo "Error creating session:"
     echo $SESSION_RESPONSE | jq '.'
     exit 1
+else
+    SESSION_ID=$(echo $SESSION_RESPONSE | jq -r '.session_id')
+    echo "Created session with ID: $SESSION_ID"
+    echo $SESSION_RESPONSE | jq '.'
 fi
 
 # Test chat endpoint
@@ -53,8 +52,17 @@ echo -e "\nTesting chat..."
 CHAT_RESPONSE=$(curl -s -X POST "$API_URL/chat/$SESSION_ID" \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "Hallo, wie geht es dir?"
+    "message": "Warum fühlst du so?"
   }')
 
 echo "Chat response:"
+echo $CHAT_RESPONSE | jq '.'
+
+# ask him to describe the golden gate bridge
+echo -e "\nAsking him to describe the golden gate bridge..."
+CHAT_RESPONSE=$(curl -s -X POST "$API_URL/chat/$SESSION_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Beschreibe mir die Golden Gate Bridge."
+  }')
 echo $CHAT_RESPONSE | jq '.'
