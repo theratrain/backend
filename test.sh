@@ -26,14 +26,15 @@ fi
 USER_ID=$(echo $USER_RESPONSE | jq -r '.id')
 echo "Created user with ID: $USER_ID"
 
+
 # Create a new session
 echo -e "\nCreating new session..."
+echo "Calling URL: $API_URL/chat/new/$USER_ID"
 SESSION_RESPONSE=$(curl -s -X POST "$API_URL/chat/new/$USER_ID" \
   -H "Content-Type: application/json" \
-  -d "{
-    \"user_id\": \"$USER_ID\",
-    \"message\": \"Hallo, wie geht es dir?\"
-  }")
+  -d '{
+    "message": "Hallo, wie geht es dir?"
+  }')
 
 # Check if session creation was successful
 if [[ $(echo $SESSION_RESPONSE | jq -r '.id' 2>/dev/null) == "null" ]]; then

@@ -43,14 +43,14 @@ class ChatService:
         
         return messages
 
-    async def get_chat_response(self, session: Session, message: str) -> str:
+    def get_chat_response(self, session: Session, message: str) -> str:
         try:
             messages = self._build_messages(session, message)
             user_config = json.loads(session.user.config)
-            model = user_config.get('model', settings.DEFAULT_MODEL)
+            model = settings.DEFAULT_MODEL
             
             logger.info(f"Sending request to Groq API for session {session.id}")
-            chat_completion = await self.client.chat.completions.create(
+            chat_completion = self.client.chat.completions.create(
                 messages=messages,
                 model=model,
                 temperature=0.7,

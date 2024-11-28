@@ -19,7 +19,7 @@ class ChatResponse(BaseModel):
     response: str
     session_id: str
 
-@router.post("/chat/{session_id}", response_model=ChatResponse)
+@router.post("/{session_id}", response_model=ChatResponse)
 async def chat(
     session_id: str,
     message: ChatMessage,
@@ -37,7 +37,7 @@ async def chat(
     
     try:
         # Get response from LLM
-        response = await chat_service.get_chat_response(session, message.message)
+        response = chat_service.get_chat_response(session, message.message)
         
         # Save updated transcript
         db.commit()
@@ -52,7 +52,7 @@ async def chat(
         db.rollback()
         raise HTTPException(status_code=500, detail="Error processing chat message")
 
-@router.post("/chat/new/{user_id}", response_model=ChatResponse)
+@router.post("/new/{user_id}", response_model=ChatResponse)
 async def start_new_chat(
     user_id: str,
     message: ChatMessage,
@@ -79,7 +79,7 @@ async def start_new_chat(
         db.flush()  # Get session ID without committing
         
         # Get response from LLM
-        response = await chat_service.get_chat_response(session, message.message)
+        response = chat_service.get_chat_response(session, message.message)
         
         # Commit everything
         db.commit()
