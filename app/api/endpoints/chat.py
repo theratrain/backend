@@ -7,6 +7,7 @@ from app.services.chat_service import ChatService
 from app.models.session import Session
 from app.models.user import User
 import logging
+import uuid
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ async def chat(
         raise HTTPException(status_code=404, detail="Session not found")
     
     try:
+        chat_service = ChatService(db=db)
         # Get response from LLM
         response = chat_service.get_chat_response(session, message.message)
         
@@ -70,25 +72,24 @@ async def start_new_chat(
         raise HTTPException(status_code=404, detail="User not found")
     
     try:
-        # Create new session
+        chat_service = ChatService(db=db)
+        # Create new session with initial transcript
         session = Session(
+            id=str(uuid.uuid4()),
             user_id=user_id,
-            transcript="[]"  # Empty transcript
+            transcript=f"THERAPEUT*IN: {message.message}"  # Initialize transcript with first message
         )
         db.add(session)
-        db.flush()  # Get session ID without committing
+        db.commit()
         
         # Get response from LLM
         response = chat_service.get_chat_response(session, message.message)
         
-        # Commit everything
-        db.commit()
-        logger.success(f"New chat session started for user {user_id}")
-        
         return ChatResponse(
             response=response,
-            session_id=str(session.id)
+            session_id=session.id
         )
+        
     except Exception as e:
         logger.error(f"Failed to start new chat for user {user_id}: {str(e)}")
         db.rollback()

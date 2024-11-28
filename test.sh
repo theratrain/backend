@@ -36,15 +36,17 @@ SESSION_RESPONSE=$(curl -s -X POST "$API_URL/chat/new/$USER_ID" \
     "message": "Hallo, wie geht es dir?"
   }')
 
-# Check if session creation was successful
-if [[ $(echo $SESSION_RESPONSE | jq -r '.id' 2>/dev/null) == "null" ]]; then
+# Check if session creation was successful by checking if session_id exists and is not null
+if [[ $(echo $SESSION_RESPONSE | jq 'has("session_id")') == "true" && $(echo $SESSION_RESPONSE | jq -r '.session_id') != "null" ]]; then
+    SESSION_ID=$(echo $SESSION_RESPONSE | jq -r '.session_id')
+    echo "Created session with ID: $SESSION_ID"
+    echo "Response:"
+    echo $SESSION_RESPONSE | jq '.'
+else
     echo "Error creating session:"
     echo $SESSION_RESPONSE | jq '.'
     exit 1
 fi
-
-SESSION_ID=$(echo $SESSION_RESPONSE | jq -r '.id')
-echo "Created session with ID: $SESSION_ID"
 
 # Test chat endpoint
 echo -e "\nTesting chat..."

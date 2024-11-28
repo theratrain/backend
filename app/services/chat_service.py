@@ -9,9 +9,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ChatService:
-    def __init__(self):
+    def __init__(self, db=None):
         self.logger = logging.getLogger(__name__)
         self.client = Groq(api_key=settings.GROQ_API_KEY)
+        self.db = db
         self.logger.debug("ChatService initialized")
 
     def _build_messages(self, session: Session, new_message: str) -> list:
@@ -31,10 +32,20 @@ class ChatService:
         
         # Add existing transcript if it exists
         if session.transcript:
-            transcript = json.loads(session.transcript)
-            self.logger.debug(f"Adding existing transcript with {len(transcript)} messages")
-            messages.extend(transcript)
-            
+            # Split transcript into messages and convert to chat format
+            transcript_messages = session.transcript.split('\n')
+            for msg in transcript_messages:
+                if msg.startswith('THERAPEUT*IN: '):
+                    messages.append({
+                        "role": "user",
+                        "content": msg.replace('THERAPEUT*IN: ', '')
+                    })
+                elif msg.startswith('KLIENT*IN: '):
+                    messages.append({
+                        "role": "assistant",
+                        "content": msg.replace('KLIENT*IN: ', '')
+                    })
+        
         # Add new message
         messages.append({
             "role": "user",
@@ -45,6 +56,12 @@ class ChatService:
 
     def get_chat_response(self, session: Session, message: str) -> str:
         try:
+            # Add therapist message to transcript first
+            if session.transcript:
+                session.transcript = session.transcript + f"\nTHERAPEUT*IN: {message}"
+            else:
+                session.transcript = f"THERAPEUT*IN: {message}"
+            
             messages = self._build_messages(session, message)
             user_config = json.loads(session.user.config)
             model = settings.DEFAULT_MODEL
@@ -60,12 +77,14 @@ class ChatService:
             )
             
             assistant_message = chat_completion.choices[0].message.content
-            session.transcript = json.dumps(messages + [{
-                "role": "assistant",
-                "content": assistant_message
-            }])
             
-            logger.success(f"Successfully generated response for session {session.id}")
+            # Add client response to transcript
+            session.transcript = session.transcript + f"\nKLIENT*IN: {assistant_message}"
+            
+            # Save the updated transcript
+            if self.db:
+                self.db.commit()
+            
             return assistant_message
             
         except Exception as e:
