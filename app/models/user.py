@@ -6,10 +6,10 @@ import uuid
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(String, primary_key=True, index=True)
     is_ai = Column(Boolean, default=False)
-    alias = Column(String, unique=True, index=True)
-    config = Column(Text)
+    alias = Column(String)
+    config = Column(String, nullable=True)
     
     # Relationships
     sessions = relationship("Session", backref="user")

@@ -17,3 +17,13 @@ class User(UserBase):
 
     class Config:
         from_attributes = True 
+
+class UserResponse(BaseModel):
+    id: str
+    alias: str
+    is_ai: bool
+    config: Optional[Dict] = None
+    sessions: List = []
+
+    class Config:
+        from_attributes = True 

@@ -14,6 +14,7 @@ def create_session(
     user_id: str,
     db: Session = Depends(get_db)
 ):
+    logger.info(f"Creating new session for user {user_id}")
     """Create a new empty session for a user"""
     try:
         session = SessionModel(

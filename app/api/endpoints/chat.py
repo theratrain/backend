@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Dict
 from app.db.session import get_db
 from app.services.chat_service import ChatService
 from app.models.session import Session
+from app.models.user import User
 import logging
 
 router = APIRouter()
@@ -26,6 +28,7 @@ async def chat(
     """
     Send a message in a chat session and get a response
     """
+    logger.info(f"Processing chat message for session {session_id}")
     # Get session
     session = db.query(Session).filter(Session.id == session_id).first()
     if not session:
@@ -58,6 +61,8 @@ async def start_new_chat(
     """
     Start a new chat session and send first message
     """
+    
+    logger.info(f"Starting new chat for user {user_id}")
     # Get user
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
