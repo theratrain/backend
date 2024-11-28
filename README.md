@@ -40,3 +40,36 @@ venv\Scripts\activate
 python3 -m venv venv
 source venv/bin/activate
 ```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+
+## Configuration
+
+The application uses a SQLite database by default. The database file (`training.db`) will be automatically created in the root directory when you first run the application.
+
+You can modify the configuration in `app/core/config.py` if needed.
+
+## Running the Application
+
+1. Start the server:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+2. The API will be available at:
+- API: `http://localhost:8000`
+- Interactive API documentation: `http://localhost:8000/docs`
+- Alternative API documentation: `http://localhost:8000/redoc`
+
+## API Endpoints
+
+### Users
+- `POST /users/` - Create a new user
+- `GET /users/` - List all users
+- `GET /users/{user_id}` - Get specific user
